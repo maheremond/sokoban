@@ -54,6 +54,47 @@ void display_board(char **board)
     printf("+----------+\n");
     printf("\n");
 }
+void free_board(char **board)
+{
+    int i;
+    
+    i = 0;
+    while (i < 10)
+    {
+        free(board[i]);
+        i++;
+    }
+    free(board);
+}
+char **get_board()
+{
+    char **board;
+    int i;
+    
+    board = init_board();
+    
+    // Créer les murs extérieurs uniquement
+    i = 0;
+    while (i < 10)
+    {
+        board[0][i] = '#';  // Mur haut
+        board[9][i] = '#';  // Mur bas
+        board[i][0] = '#';  // Mur gauche
+        board[i][9] = '#';  // Mur droite
+        i++;
+    }
+    
+    // Placer le joueur
+    board[5][5] = '@';
+    
+    // Placer 1 caisse
+    board[4][4] = '$';
+    
+    // Placer 1 cible
+    board[2][2] = '.';
+    
+    return board;
+}
 
 void free_board(char **board)
 {
