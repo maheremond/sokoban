@@ -6,9 +6,11 @@
 #include <unistd.h>
 
 /* board.c */
-char ** init_board();
+char **init_board();
 void display_board(char **board);
-char ** get_board();
+char **get_board();
+void free_board(char **board);
+
 /* moves.c */
 int ask_player_move(char **board);
 void player_move(char **board, int move);
@@ -24,6 +26,7 @@ typedef struct {
     int x;
     int y;
 } Box;
+
 typedef struct {
     int x;
     int y;
