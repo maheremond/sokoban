@@ -28,3 +28,5 @@ typedef struct {
     int x;
     int y;
 } Target;
+
+#endif

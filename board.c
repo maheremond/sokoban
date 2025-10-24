@@ -54,18 +54,7 @@ void display_board(char **board)
     printf("+----------+\n");
     printf("\n");
 }
-void free_board(char **board)
-{
-    int i;
-    
-    i = 0;
-    while (i < 10)
-    {
-        free(board[i]);
-        i++;
-    }
-    free(board);
-}
+
 char **get_board()
 {
     char **board;
