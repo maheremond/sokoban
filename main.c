@@ -10,3 +10,15 @@ int main()
     display_board(board);
     return 0;
 }
+
+#include "sokoban.h"
+int main()
+{
+    char **board;
+    
+    board = get_board();
+    display_board(board);
+    free_board(board);
+    
+    return 0;
+}
