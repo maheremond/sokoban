@@ -32,27 +32,38 @@ void display_board(char **board)
 
     printf("\n");
     
-    // Bordure supérieure
-    printf("+----------+\n");
+    // Bordure supérieure avec #
+    i = 0;
+    while (i < 12)
+    {
+        printf("#");
+        i++;
+    }
+    printf("\n");
     
     // Affichage du contenu
     i = 0;
     while (i < 10)
     {
-        printf("|");
+        printf("#");
         j = 0;
         while (j < 10)
         {
             printf("%c", board[i][j]);
             j++;
         }
-        printf("|\n");
+        printf("#\n");
         i++;
     }
     
-    // Bordure inférieure
-    printf("+----------+\n");
-    printf("\n");
+    // Bordure inférieure avec #
+    i = 0;
+    while (i < 12)
+    {
+        printf("#");
+        i++;
+    }
+    printf("\n\n");
 }
 
 char **get_board()
@@ -61,17 +72,6 @@ char **get_board()
     int i;
     
     board = init_board();
-    
-    // Créer les murs extérieurs uniquement
-    i = 0;
-    while (i < 10)
-    {
-        board[0][i] = '#';  // Mur haut
-        board[9][i] = '#';  // Mur bas
-        board[i][0] = '#';  // Mur gauche
-        board[i][9] = '#';  // Mur droite
-        i++;
-    }
     
     // Placer le joueur
     board[5][5] = '@';
