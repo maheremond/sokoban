@@ -60,8 +60,8 @@ char **get_board()
         
         // Generer position aleatoire pour la cible
         do {
-            target_x = rand() % 10;
-            target_y = rand() % 10;
+            target_x = 1 + rand() % 8;
+            target_y = 1 + rand() % 8;
         } while (board[target_y][target_x] != ' ' || 
                  (target_x == player_x && target_y == player_y) ||
                  (target_x == box_x && target_y == box_y));
@@ -284,8 +284,7 @@ int is_game_won(char **board, int target_x, int target_y)
     return 0; // Pas encore gagné
 }
 
-// Fonction simple: vérifie si une caisse est bloquée sur un bord
-int is_box_dead_on_edge(char **board)
+int is_game_lost(char **board)
 {
     int i, j;
     int box_x = -1, box_y = -1;
@@ -305,183 +304,102 @@ int is_box_dead_on_edge(char **board)
         if (box_x != -1) break;
     }
     
-    if (box_x == -1) return 0; // Pas de caisse
+    if (box_x == -1) return 0; // Pas de caisse trouvée
     
-    // Si la caisse est déjà sur la cible, pas de problème
-    if (box_x == target_x_pos && box_y == target_y_pos) return 0;
-    
-    // Vérifier si la caisse est sur le bord gauche (x = 0)
-    if (box_x == 0)
+    // Vérifier si la caisse est sur la cible (elle ne peut pas être perdue si elle est déjà arrivée)
+    if (box_x == target_x_pos && box_y == target_y_pos)
     {
-        // La cible est-elle aussi sur le bord gauche ?
-        if (target_x_pos != 0)
-            return 1; // DÉFAITE: caisse sur bord gauche, cible pas sur bord gauche
+        return 0; // Pas de défaite si la caisse est sur la cible
     }
     
-    // Vérifier si la caisse est sur le bord droit (x = 9)
-    if (box_x == 9)
-    {
-        if (target_x_pos != 9)
-            return 1; // DÉFAITE: caisse sur bord droit, cible pas sur bord droit
-    }
-    
-    // Vérifier si la caisse est sur le bord haut (y = 0)
-    if (box_y == 0)
-    {
-        if (target_y_pos != 0)
-            return 1; // DÉFAITE: caisse sur bord haut, cible pas sur bord haut
-    }
-    
-    // Vérifier si la caisse est sur le bord bas (y = 9)
-    if (box_y == 9)
-    {
-        if (target_y_pos != 9)
-            return 1; // DÉFAITE: caisse sur bord bas, cible pas sur bord bas
-    }
-    
-    return 0; // Pas de défaite
-}
-
-int can_reach_target_from_position(char **board, int box_x, int box_y, int target_x, int target_y, char **visited, int depth)
-{
-    // Limite de profondeur pour éviter une récursion infinie
-    if (depth > 50) return 0;
-    
-    // Si la caisse est déjà sur la cible
-    if (box_x == target_x && box_y == target_y) return 1;
-    
-    // Marquer cette position comme visitée
-    if (visited[box_y][box_x]) return 0;
-    visited[box_y][box_x] = 1;
-    
-    // Essayer les 4 directions possibles pour pousser la caisse
-    int directions[][2] = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}; // haut, bas, gauche, droite
-    int i;
-    
-    for (i = 0; i < 4; i++)
-    {
-        int new_box_x = box_x + directions[i][0];
-        int new_box_y = box_y + directions[i][1];
-        int player_x = box_x - directions[i][0];  // Le joueur doit être du côté opposé
-        int player_y = box_y - directions[i][1];
-        
-        // Vérifier si la nouvelle position de la caisse est valide
-        if (new_box_x < 0 || new_box_x >= 10 || new_box_y < 0 || new_box_y >= 10)
-            continue;
-        if (board[new_box_y][new_box_x] == '#')
-            continue;
-        
-        // Vérifier si la position du joueur pour pousser est valide
-        if (player_x < 0 || player_x >= 10 || player_y < 0 || player_y >= 10)
-            continue;
-        if (board[player_y][player_x] == '#')
-            continue;
-        
-        // Vérifier si le joueur peut atteindre cette position de poussée
-        // (simulation simple - on ignore la caisse temporairement)
-        char temp_board[10][10];
-        int j, k;
-        for (j = 0; j < 10; j++) {
-            for (k = 0; k < 10; k++) {
-                temp_board[j][k] = board[j][k];
-            }
-        }
-        temp_board[box_y][box_x] = ' '; // Retirer temporairement la caisse
-        
-        // Trouver la position actuelle du joueur
-        int current_player_x = -1, current_player_y = -1;
-        for (j = 0; j < 10; j++) {
-            for (k = 0; k < 10; k++) {
-                if (temp_board[j][k] == 'O') {
-                    current_player_x = k;
-                    current_player_y = j;
-                    break;
-                }
-            }
-            if (current_player_x != -1) break;
-        }
-        
-        if (current_player_x != -1) {
-            char **temp_board_ptr = malloc(10 * sizeof(char*));
-            for (j = 0; j < 10; j++) {
-                temp_board_ptr[j] = malloc(10 * sizeof(char));
-                for (k = 0; k < 10; k++) {
-                    temp_board_ptr[j][k] = temp_board[j][k];
-                }
-            }
-            
-            // Vérifier si le joueur peut atteindre la position de poussée
-            int can_reach = is_position_reachable(temp_board_ptr, current_player_x, current_player_y, player_x, player_y);
-            
-            // Libérer la mémoire temporaire
-            for (j = 0; j < 10; j++) {
-                free(temp_board_ptr[j]);
-            }
-            free(temp_board_ptr);
-            
-            if (can_reach) {
-                // Récursion pour tester cette nouvelle position
-                if (can_reach_target_from_position(board, new_box_x, new_box_y, target_x, target_y, visited, depth + 1)) {
-                    visited[box_y][box_x] = 0; // Nettoyer avant de retourner
-                    return 1;
-                }
-            }
-        }
-    }
-    
-    visited[box_y][box_x] = 0; // Nettoyer cette position
-    return 0;
-}
-
-int is_victory_still_possible(char **board)
-{
-    int i, j;
-    int box_x = -1, box_y = -1;
-    
-    // Trouver la position de la caisse
-    for (i = 0; i < 10; i++)
-    {
-        for (j = 0; j < 10; j++)
-        {
-            if (board[i][j] == 'X')
-            {
-                box_x = j;
-                box_y = i;
-                break;
-            }
-        }
-        if (box_x != -1) break;
-    }
-    
-    if (box_x == -1) return 0;
-    if (box_x == target_x_pos && box_y == target_y_pos) return 1;
-    
-    // VÉRIFICATION 1: Caisse bloquée sur un bord
-    if (is_box_dead_on_edge(board))
-    {
-        return 0; // DÉFAITE IMMÉDIATE
-    }
-    
-    // VÉRIFICATION 2: Caisse dans un coin
+    // Vérifier si la caisse est dans un coin
     int blocked_up = (box_y == 0) || (board[box_y-1][box_x] == '#');
     int blocked_down = (box_y == 9) || (board[box_y+1][box_x] == '#');
     int blocked_left = (box_x == 0) || (board[box_y][box_x-1] == '#');
     int blocked_right = (box_x == 9) || (board[box_y][box_x+1] == '#');
     
+    // Si bloquée dans un coin
     if ((blocked_up && blocked_left) || (blocked_up && blocked_right) || 
         (blocked_down && blocked_left) || (blocked_down && blocked_right))
     {
-        return 0; // DÉFAITE: caisse dans un coin
+        return 1; // Partie perdue
     }
     
-    // Si les vérifications simples passent, on retourne 1
-    return 1;
-}
-
-int is_game_lost(char **board)
-{
-    // Utiliser le nouveau système de calcul de possibilité de victoire
-    return !is_victory_still_possible(board);
+    // NOUVELLE LOGIQUE : Vérifier si la caisse est au bord et que la cible n'est pas au même bord
+    int box_on_border = (box_x == 0 || box_x == 9 || box_y == 0 || box_y == 9);
+    
+    if (box_on_border)
+    {
+        // Vérifier si la cible est sur le même bord que la caisse
+        int target_on_same_border = 0;
+        
+        if (box_x == 0 && target_x_pos == 0) target_on_same_border = 1; // Même bord gauche
+        if (box_x == 9 && target_x_pos == 9) target_on_same_border = 1; // Même bord droit
+        if (box_y == 0 && target_y_pos == 0) target_on_same_border = 1; // Même bord haut
+        if (box_y == 9 && target_y_pos == 9) target_on_same_border = 1; // Même bord bas
+        
+        // Si la caisse est au bord mais la cible n'est pas sur le même bord
+        if (!target_on_same_border)
+        {
+            return 1; // Défaite immédiate : impossible d'atteindre la cible
+        }
+        
+        // Si la caisse et la cible sont sur le même bord, vérifier si on peut encore bouger la caisse vers la cible
+        if (target_on_same_border)
+        {
+            // Caisse et cible sur le bord gauche (x=0)
+            if (box_x == 0 && target_x_pos == 0)
+            {
+                // Vérifier si la caisse peut se déplacer verticalement vers la cible
+                if (box_y != target_y_pos)
+                {
+                    // Si il y a des murs qui bloquent le mouvement vertical
+                    if ((box_y < target_y_pos && blocked_down) || (box_y > target_y_pos && blocked_up))
+                    {
+                        return 1; // Impossible d'atteindre la cible
+                    }
+                }
+            }
+            
+            // Caisse et cible sur le bord droit (x=9)
+            if (box_x == 9 && target_x_pos == 9)
+            {
+                if (box_y != target_y_pos)
+                {
+                    if ((box_y < target_y_pos && blocked_down) || (box_y > target_y_pos && blocked_up))
+                    {
+                        return 1;
+                    }
+                }
+            }
+            
+            // Caisse et cible sur le bord haut (y=0)
+            if (box_y == 0 && target_y_pos == 0)
+            {
+                if (box_x != target_x_pos)
+                {
+                    if ((box_x < target_x_pos && blocked_right) || (box_x > target_x_pos && blocked_left))
+                    {
+                        return 1;
+                    }
+                }
+            }
+            
+            // Caisse et cible sur le bord bas (y=9)
+            if (box_y == 9 && target_y_pos == 9)
+            {
+                if (box_x != target_x_pos)
+                {
+                    if ((box_x < target_x_pos && blocked_right) || (box_x > target_x_pos && blocked_left))
+                    {
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    
+    return 0; // Jeu continue
 }
 
 void save_game_state(char **board)

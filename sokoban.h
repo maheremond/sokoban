@@ -25,4 +25,9 @@ void generate_random_walls(char **board);
 int is_position_reachable(char **board, int start_x, int start_y, int target_x, int target_y);
 int is_level_solvable(char **board, int player_x, int player_y, int box_x, int box_y, int target_x, int target_y);
 
+/* victory calculation functions */
+int can_reach_target_from_position(char **board, int box_x, int box_y, int target_x, int target_y, char **visited, int depth);
+int is_victory_still_possible(char **board);
+int is_box_dead_on_edge(char **board);
+
 #endif
